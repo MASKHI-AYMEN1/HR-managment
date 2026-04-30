@@ -163,6 +163,8 @@ const ScheduleInterviewModal: React.FC<Props> = ({
                     label={t('interview.schedule.offer', 'Offre')}
                     placeholder={t('interview.schedule.selectOffer', 'Sélectionner une offre')}
                     items={offerItems}
+                    getKey={(item) => item.key}
+                    getLabel={(item) => item.label}
                   />
                 </div>
                 <div>
@@ -172,6 +174,8 @@ const ScheduleInterviewModal: React.FC<Props> = ({
                     label={t('interview.schedule.candidate', 'Candidat')}
                     placeholder={t('interview.schedule.selectCandidate', 'Sélectionner un candidat')}
                     items={candidateItems}
+                    getKey={(item) => item.key}
+                    getLabel={(item) => item.label}
                   />
                 </div>
               </div>
@@ -207,6 +211,8 @@ const ScheduleInterviewModal: React.FC<Props> = ({
                     label={t('interview.schedule.duration', 'Durée')}
                     placeholder="Durée"
                     items={DURATION_ITEMS}
+                    getKey={(item) => item.key}
+                    getLabel={(item) => item.label}
                   />
                 </div>
                 <div>
@@ -295,7 +301,7 @@ const ScheduleInterviewModal: React.FC<Props> = ({
                 className="text-white font-semibold"
                 isLoading={isPending}
               >
-                {t('interview.schedule.confirm', 'Planifier l'entretien')}
+                {t('interview.schedule.confirm', 'Planifier l\'entretien')}
               </Button>
             </ModalFooter>
           </form>
