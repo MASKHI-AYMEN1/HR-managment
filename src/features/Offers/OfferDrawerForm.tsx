@@ -26,7 +26,7 @@ const OfferDrawerForm: React.FC<OfferDrawerFormProps> = ({ mode, offerId, onSucc
   const updateMutation = useUpdateOffer(offerId)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
 
-  const contractTypes = [
+  const contractTypes: Array<{ value: 'CDI' | 'CDD' | 'CIVP'; label: string }> = [
     { value: 'CDI', label: intl.formatMessage({ id: 'offer.typeContrat.CDI', defaultMessage: 'CDI' }) },
     { value: 'CDD', label: intl.formatMessage({ id: 'offer.typeContrat.CDD', defaultMessage: 'CDD' }) },
     { value: 'CIVP', label: intl.formatMessage({ id: 'offer.typeContrat.CIVP', defaultMessage: 'CIVP' }) },
