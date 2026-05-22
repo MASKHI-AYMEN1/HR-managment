@@ -80,21 +80,20 @@ export function Footer() {
                         <ul className="space-y-3 text-sm">
                             <li className="flex items-center gap-2">
                                 <FiMail size={14} className="text-yellow-500 shrink-0" />
-                                <a href="mailto:contact@rhmanagment.fr" className="hover:text-yellow-500 transition-colors">
-                                    contact@rhmanagment.fr
+                                <a href="mailto:SFBT.RECRUTEMENT@castel-afrique.com" className="hover:text-yellow-500 transition-colors">
+                            {intl.formatMessage({ id: 'contact.emailValue' })}
                                 </a>
                             </li>
                             <li className="flex items-center gap-2">
                                 <FiPhone size={14} className="text-yellow-500 shrink-0" />
-                                <a href="tel:+33123456789" className="hover:text-yellow-500 transition-colors">
-                                    +33 1 23 45 67 89
+                                <a href="tel:+21671189200" className="hover:text-yellow-500 transition-colors">
+                            {intl.formatMessage({ id: 'contact.phoneValue' })}
                                 </a>
                             </li>
                             <li className="flex items-start gap-2">
                                 <FiMapPin size={14} className="text-yellow-500 shrink-0 mt-1" />
                                 <span>
-                                    123 Avenue des Champs-Elysees<br />
-                                    75008 Paris, France
+                                    {intl.formatMessage({ id: 'contact.addressValue' })}
                                 </span>
                             </li>
                         </ul>

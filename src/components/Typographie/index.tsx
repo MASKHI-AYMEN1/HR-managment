@@ -17,6 +17,9 @@ export interface TypographyProps
   variant?: Variant
   as?: React.ElementType
   color?: string
+  className?: string
+  style?: React.CSSProperties
+  children?: React.ReactNode
   weight?:
     | 'thin'
     | 'light'

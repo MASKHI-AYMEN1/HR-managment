@@ -256,7 +256,7 @@ export default function PostulerPage() {
                 {intl.formatMessage({ id: 'candidature.terms', defaultMessage: 'I agree to the terms and conditions' })}
               </Checkbox>
             </div>
-            <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+            <Modal isOpen={isOpen} onOpenChange={onOpenChange} scrollBehavior="inside">
               <ModalContent>
                 <ModalHeader>
                   <Typography className="text-lg font-semibold">
@@ -266,7 +266,9 @@ export default function PostulerPage() {
                 <ModalBody>
                   {/* Terms and conditions content goes here */}
                   <Typography className="mb-4">
-                    {intl.formatMessage({ id: 'candidature.termsContent', defaultMessage: 'Terms and conditions content goes here...' })}
+                    <div style={{ whiteSpace: 'pre-line' }}>
+  {intl.formatMessage({ id: 'candidature.termsContent' })}
+</div>
                   </Typography>
                 </ModalBody>
                 <ModalFooter>
