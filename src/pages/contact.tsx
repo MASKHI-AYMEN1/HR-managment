@@ -15,13 +15,13 @@ const INFO_ITEMS = [
     icon: FiPhone,
     titleId: 'contact.phone',
     valueId: 'contact.phoneValue',
-    href: 'tel:+21671234567',
+    href: 'tel:+21671189200',
   },
   {
     icon: FiMail,
     titleId: 'contact.email',
     valueId: 'contact.emailValue',
-    href: 'mailto:contact@rhmanagement.tn',
+    href: 'mailto:SFBT.RECRUTEMENT@castel-afrique.com',
   },
   {
     icon: FiClock,
