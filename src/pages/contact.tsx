@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import PublicLayout from '@/layouts/PublicLayout'
 import { useIntl } from 'react-intl'
 import { FiMail, FiPhone, FiMapPin, FiClock, FiSend, FiLinkedin, FiTwitter, FiFacebook } from 'react-icons/fi'
+import ContactMap from '@/features/ContactMap'
 
 type FormState = { name: string; email: string; subject: string; message: string }
 
@@ -150,10 +151,9 @@ export default function ContactPage() {
             </div>
 
             {/* Map placeholder */}
-            <div className="w-full h-48 rounded-2xl overflow-hidden bg-gray-200 dark:bg-gray-800 flex items-center justify-center border border-gray-200 dark:border-gray-700">
+            <div className="w-full h-48 rounded-2xl overflow-hidden bg-gray-200 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
               <div className="text-center text-gray-400 dark:text-gray-500">
-                <FiMapPin size={28} className="mx-auto mb-2 text-yellow-400" />
-                <p className="text-xs">RH Management — Tunis, Tunisie</p>
+                <ContactMap />
               </div>
             </div>
           </div>
