@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import AxiosAuth from '../../common/configuration/axiosAuth'
+import AxiosAuth, { AxiosLogin } from '../../common/configuration/axiosAuth'
 import {
   APIResponse,
   ResFour,
@@ -14,7 +14,7 @@ import {
   CredentielForgetPassword,
   CredentielResetPassword,
 } from '@/common/types/Credentiel'
-import ApiClient from '../../common/configuration/http'
+import ApiClient, { resetHttpInstance } from '../../common/configuration/http'
 import ApiCustomer from '@/common/configuration/ApiCustomer'
 import { useHttpOnlyCookieExists } from '@/common/hooks/useGetExistantCookies'
 import { User } from '@/common/types/User'
@@ -27,11 +27,15 @@ const useAuthenticationAPI = () => {
     return useMutation<string, Error, Credentiel>({
       mutationKey: [AUTHENTICATION_INFORMATION],
       mutationFn: (data) =>
-        AxiosAuth.post(`/auth/login`, data, {
+        // AxiosLogin has NO interceptors and withCredentials: true so the
+        // browser stores the Set-Cookie from the response without sending
+        // any stale token through auto-refresh interceptors.
+        AxiosLogin.post(`/auth/login`, data, {
           headers: COMMON_JSON_HEADERS,
         }).then((res) => res.data.message),
     })
   }
+
   const useLogOut = () => {
     return useMutation<void, Error, string>({
       mutationKey: [AUTHENTICATION_INFORMATION],
@@ -41,18 +45,28 @@ const useAuthenticationAPI = () => {
         }).then((res) => res.data.message),
       onSuccess: () => {
         queryClient.removeQueries({ queryKey: [AUTHENTICATION_INFORMATION] })
+        // Create a fresh ApiClient instance so the next login starts clean.
+        resetHttpInstance()
       },
     })
   }
 
   const useGetCurrentUser = () => {
-    return useQuery<User, Error>({
+    return useQuery<User | null, Error>({
       queryKey: [AUTHENTICATION_INFORMATION],
       staleTime: 0,
-      queryFn: async() =>
-        ApiClient.get<
-          APIResponse<ResSeven<User>>
-        >(`/users/me`).then((res) => res.data.data),
+      retry: false,          // don't retry on 401
+      queryFn: async () => {
+        try {
+          return await ApiClient.get<ResSeven<User>>(`/users/me`).then(
+            (res) => res.data.data
+          )
+        } catch (err: any) {
+          // 401 = not logged in, return null instead of throwing
+          if (err?.response?.status === 401) return null
+          throw err
+        }
+      },
     })
   }
   const useForgetPassword = () => {

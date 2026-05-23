@@ -1,81 +1,104 @@
-import axios from 'axios'
+import axios, { AxiosInstance } from 'axios'
 import { API_URLS } from '../constants/authConfig'
 import AxiosAuth from './axiosAuth'
 
-const headers = {
-  'X-CSRFToken': 'some token',
-}
-const AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BASE_URL + '/api/v1',
-  withCredentials: true,
-  timeout: 60000,
-  headers: headers,
-})
+// ─── Resettable singleton ─────────────────────────────────────────────────────
+// Each call to createInstance() wires up fresh interceptors bound to that instance.
+// resetHttpInstance() is called on logout and on complete auth failure so the
+// next login starts with a clean slate (no stale retry state).
 
-AxiosInstance.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config
-    if (
-      error.response &&
-      error.response.status === 401 &&
-      originalRequest &&
-      !originalRequest._retry
-    ) {
+function createInstance(): AxiosInstance {
+  const instance = axios.create({
+    baseURL: process.env.NEXT_PUBLIC_BASE_URL + '/api/v1',
+    withCredentials: true,   // send + receive cookies for every API call
+    timeout: 60_000,
+    headers: { 'X-CSRFToken': 'some token' },
+  })
+
+  instance.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      const originalRequest = error.config
+
+      // Only handle 401s on the first attempt; never on auth-management endpoints
       if (
-        typeof originalRequest.url === 'string' &&
-        (originalRequest.url.includes('/auth/login') ||
-          originalRequest.url.includes('/auth/refresh') ||
-          originalRequest.url.includes('/auth/check'))
+        !error.response ||
+        error.response.status !== 401 ||
+        !originalRequest ||
+        originalRequest._retry
       ) {
         return Promise.reject(error)
       }
 
-      try {
-        originalRequest._retry = true
-        const { refreshTokenState, accessTokenState } =
-          await checkToken(API_URLS.check)
-
-        if (!accessTokenState && refreshTokenState) {
-          await refreshTokenAndRetryRequest()
-          return AxiosInstance(originalRequest)
-        }
-      } catch (error) {
-        console.error('Error handling response:', error)
+      const url: string = originalRequest.url ?? ''
+      if (
+        url.includes('/auth/login') ||
+        url.includes('/auth/refresh') ||
+        url.includes('/auth/check') ||
+        url.includes('/users/me')    // unauthenticated is valid – let caller handle it
+      ) {
+        return Promise.reject(error)
       }
+
+      originalRequest._retry = true
+
+      // ── Step 1: check current token state ───────────────────────────────
+      let accessTokenState = false
+      let refreshTokenState = false
+      try {
+        const res = await AxiosAuth.post(API_URLS.check)
+        accessTokenState = res.data?.accessTokenState ?? false
+        refreshTokenState = res.data?.refreshTokenState ?? false
+      } catch {
+        // check endpoint itself failed – assume refresh token may still be valid
+        // and fall through to the refresh attempt below
+      }
+
+      // ── Step 2: access token still valid → retry immediately ────────────
+      if (accessTokenState) {
+        return _instance(originalRequest)
+      }
+
+      // ── Step 3: try to refresh (also runs when check itself failed) ──────
+      // Always attempt refresh whenever the access token is not confirmed valid.
+      // This covers: refreshTokenState=true, check threw, or any other case.
+      try {
+        await AxiosAuth.post(API_URLS.refreshToken)
+        return _instance(originalRequest)
+      } catch {
+        // refresh failed → fall through to hard logout
+      }
+
+      // ── Step 4: both check and refresh failed → reset + redirect to home ─
+      console.warn('[ApiClient] Auth recovery failed – resetting session.')
+      resetHttpInstance()
+      if (typeof window !== 'undefined') {
+        window.location.href = '/'
+      }
+      return Promise.reject(error)
     }
+  )
 
-    return Promise.reject(error)
-  }
-)
-
-async function checkToken(url: string) {
-  try {
-    const response = await AxiosAuth.post(url)
-    const { accessToken, refreshTokenState, accessTokenState } = response.data
-
-    return { accessToken, refreshTokenState, accessTokenState }
-  } catch (error) {
-    console.error('Error checking token:', error)
-    throw error
-  }
+  return instance
 }
 
-async function refreshTokenAndRetryRequest() {
-  try {
-    await AxiosAuth.post(API_URLS.refreshToken)
-  } catch (error) {
-    console.error('Error refreshing token:', error)
-    throw error
-  }
+let _instance: AxiosInstance = createInstance()
+
+/** Replace the current singleton with a brand-new instance (empty state). */
+export function resetHttpInstance(): void {
+  _instance = createInstance()
 }
+
+// ─── ApiClient proxy ──────────────────────────────────────────────────────────
+// Always delegates to the current _instance so callers that imported ApiClient
+// before a reset will automatically use the new instance.
 
 const ApiClient = {
-  get: AxiosInstance.get,
-  post: AxiosInstance.post,
-  put: AxiosInstance.put,
-  delete: AxiosInstance.delete,
-  patch: AxiosInstance.patch,
+  get:    <T = unknown>(...args: Parameters<AxiosInstance['get']>)    => _instance.get<T>(...args),
+  post:   <T = unknown>(...args: Parameters<AxiosInstance['post']>)   => _instance.post<T>(...args),
+  put:    <T = unknown>(...args: Parameters<AxiosInstance['put']>)    => _instance.put<T>(...args),
+  delete: <T = unknown>(...args: Parameters<AxiosInstance['delete']>) => _instance.delete<T>(...args),
+  patch:  <T = unknown>(...args: Parameters<AxiosInstance['patch']>)  => _instance.patch<T>(...args),
 }
 
 export default ApiClient
