@@ -57,7 +57,15 @@ function createInstance(): AxiosInstance {
       // /users/me: never triggers a refresh – 401 means not authenticated,
       // the caller (useGetCurrentUser) handles it by returning null.
       if (url.includes('/users/me')) {
-        return Promise.reject(error)
+        // Check token state to see if refresh token exists
+        try {
+          const checkRes = await AxiosAuth.post(API_URLS.check)
+          if (!checkRes.data?.refreshTokenState) {
+            return Promise.reject(error)
+          }
+        } catch (e) {
+          console.log('[/users/me] Check failed:', e)
+        }
       }
 
       // ── Already refreshing: queue this request and wait ──────────────────
