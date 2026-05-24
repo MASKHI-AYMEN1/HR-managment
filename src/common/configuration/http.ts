@@ -54,7 +54,11 @@ function createInstance(): AxiosInstance {
         return Promise.reject(error)
       }
 
-      const isMeEndpoint = url.includes('/users/me')
+      // /users/me: never triggers a refresh – 401 means not authenticated,
+      // the caller (useGetCurrentUser) handles it by returning null.
+      if (url.includes('/users/me')) {
+        return Promise.reject(error)
+      }
 
       // ── Already refreshing: queue this request and wait ──────────────────
       if (isRefreshing) {
@@ -92,15 +96,12 @@ function createInstance(): AxiosInstance {
       } catch (refreshError) {
         isRefreshing = false
         drainQueue(refreshError)
-        // For /users/me: don't redirect, just return null (unauthenticated is valid)
-        if (isMeEndpoint) {
-          return Promise.reject(refreshError)
-        }
-        // Step 4: both failed → reset + redirect home
+        // Refresh failed → reset instance and redirect to login
+        // (skip redirect if already on the login page to avoid loops)
         console.warn('[ApiClient] Auth recovery failed – resetting session.')
         resetHttpInstance()
-        if (typeof window !== 'undefined') {
-          window.location.href = '/'
+        if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+          window.location.href = '/login'
         }
         return Promise.reject(refreshError)
       }
