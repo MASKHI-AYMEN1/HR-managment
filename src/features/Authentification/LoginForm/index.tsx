@@ -207,8 +207,10 @@ export default function Index() {
       {/* Section Bannière */}
       <div className="flex-1 hidden lg:flex relative">
         <div
-          className="w-full bg-cover bg-center"
-          style={{ backgroundImage: "url('/images/banner-login.png')" }}
+   className="w-full bg-center bg-no-repeat h-full"
+style={{
+  backgroundImage: "url('/images/banner-login.png')",
+ backgroundSize: "840px auto",}}
         />
         {/* Overlay */}
         <div className="absolute inset-0 bg-white/10 dark:bg-black/10" />

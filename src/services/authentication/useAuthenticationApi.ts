@@ -13,6 +13,7 @@ import {
   Credentiel,
   CredentielForgetPassword,
   CredentielResetPassword,
+  RegisterData,
 } from '@/common/types/Credentiel'
 import ApiClient, { resetHttpInstance } from '../../common/configuration/http'
 import ApiCustomer from '@/common/configuration/ApiCustomer'
@@ -31,6 +32,16 @@ const useAuthenticationAPI = () => {
         // browser stores the Set-Cookie from the response without sending
         // any stale token through auto-refresh interceptors.
         AxiosLogin.post(`/auth/login`, data, {
+          headers: COMMON_JSON_HEADERS,
+        }).then((res) => res.data.message),
+    })
+  }
+
+  const useRegister = () => {
+    return useMutation<string, Error, RegisterData>({
+      mutationKey: [AUTHENTICATION_INFORMATION],
+      mutationFn: (data) =>
+        AxiosLogin.post(`/auth/register`, data, {
           headers: COMMON_JSON_HEADERS,
         }).then((res) => res.data.message),
     })
@@ -101,6 +112,7 @@ const useAuthenticationAPI = () => {
 
   return {
     useLogin,
+    useRegister,
     useLogOut,
     useGetCurrentUser,
     useForgetPassword,

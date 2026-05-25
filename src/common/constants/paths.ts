@@ -1,6 +1,7 @@
 export const ACCESS_DENIED_PATH= "/errors"
 export const NOT_FOUND_PATH= "/notfound"
 export const HOME_PATH= "/"
+export const LOGIN_PATH= "/login"
 export const FORGET_PASSWORD_PATH= "/forgetpassword"
 export const GOOGLE_CONNECT_PATH= "/googleconnect"
 export const REGISTRATION_PATH= "/registration"

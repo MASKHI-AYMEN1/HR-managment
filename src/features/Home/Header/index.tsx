@@ -40,8 +40,8 @@ export function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <img src={LOGO_ICON} alt="Logo" height="18" width="60" />
-            <Typography variant="h5" weight="bold" className="text-gray-900 dark:text-white">
-              RH
+            <Typography variant="h5" weight="bold" className="bg-gradient-to-r from-yellow-300 via-orange-500 to-yellow-800 bg-clip-text text-transparent">
+              EcoHire
             </Typography>
           </Link>
 
